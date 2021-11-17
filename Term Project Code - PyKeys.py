@@ -49,16 +49,35 @@ def mousePressed(app, event):
     #gets x and y coordinate from key click
     x = event.x
     y = event.y
+    flag = False
     letters = ['C3','D3','E3','F3','G3','A3','B3','C4','D4','E4','F4','G4','A4','B4','C5','D5']
+    for sharp in app.flatsandsharps:
+        x00 = sharp[0]
+        y00 = sharp[1]
+        x10 = sharp[2]
+        y10 = sharp[3]
+        if x > x00 and x < x10 and y > y00 and y < y10:
+            flatsandsharps = ['C3#','E3b','F3#','G3#','A3#','C4#','D4#','F4#','G4#','A4#','C5#','D5#']
+            index = app.flatsandsharps.index(sharp)
+            player.play_note(flatsandsharps[index], 0.36)
+            flag = True
+            break
+         
     for key in app.keys:
         x0 = key[0]
         y0 = key[1]
         x1 = key[2]
         y1 = key[3]
-        #if its within the range of the keys, plays appropriate note
-        if x > x0 and x < x1 and y > y0 and y < y1:
-            index = app.keys.index(key)
-            player.play_note(letters[index], 0.36)
+        for sharp in app.flatsandsharps:
+            x00 = sharp[0]
+            y00 = sharp[1]
+            x10 = sharp[2]
+            y10 = sharp[3]
+            if flag != True:
+                if (x > x0 and x < x1 and y > y0 and y < y1): 
+                    index = app.keys.index(key)
+                    player.play_note(letters[index], 0.36)
+                    break
 
 #gets x0, y0, x1, y1 values
 def getKeyBounds(app, col):
