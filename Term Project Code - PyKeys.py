@@ -51,12 +51,22 @@ def appStarted(app):
 			app.flatsandsharps.append(details)
 	letters = (['C3','D3','E3','F3','G3','A3','B3',
 				'C4','D4','E4','F4','G4','A4','B4','C5','D5'])
-	app.notes = ([('G3', 0.3), ("E4", 0.3),("D4", 0.3),
-		  ("C4", 0.3),("D4", 0.3), ("C4", 0.3),
-		  ("A3", 0.3), ("G3", 0.4),("E3", 0.9),
-		  ('G3', 0.3), ("E4", 0.3),("D4", 0.3),
-		  ("C4", 0.3),('C4',0.3),('B3', 0.3),
-		  ("C4", 0.3), ("D4", 0.8)])
+	mybonnie = open('mybonnie.txt',"r")
+	notes = (mybonnie.read())
+	notes = notes.splitlines()
+	app.notes = []
+	for tuple in notes:
+		currnoteanddur = tuple.split(",")
+		currnote = currnoteanddur[0]
+		currdur = float(currnoteanddur[1])
+		newcurrnoteanddur = (currnote, currdur)
+		app.notes.append(newcurrnoteanddur)
+	# app.notes = ([('G3', 0.3), ("E4", 0.3),("D4", 0.3),
+	# 	  ("C4", 0.3),("D4", 0.3), ("C4", 0.3),
+	# 	  ("A3", 0.3), ("G3", 0.4),("E3", 0.9),
+	# 	  ('G3', 0.3), ("E4", 0.3),("D4", 0.3),
+	# 	  ("C4", 0.3),('C4',0.3),('B3', 0.3),
+	# 	  ("C4", 0.3), ("D4", 0.8)])
 	app.bubbles = []
 	app.bubblesy = 0
 	app.bubblesy1 = app.height/10
@@ -252,6 +262,15 @@ def freeStyle_redrawAll(app, canvas):
 	canvas.create_text(app.width/2, app.height/3, text= f"You just pressed: {app.notePlayed}",font = 'Times 50 bold', fill = 'blue')
 
 ##### COMPOSITION #####
+def composition_mousePressed(app, event):
+	pass
+
+def composition_keyPressed(app, event):
+	pass
+
+def composition_redrawAll(app, event):
+	pass
+
 
 
 #run app
