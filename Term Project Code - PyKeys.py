@@ -1,4 +1,6 @@
 import math, copy, random
+
+from numpy import roots
 from cmu_112_graphics import *
 import musicalbeeps
 #needed to play sounds
@@ -74,6 +76,8 @@ def appStarted(app):
 	songs = (songlist.read())
 	app.songs = songs.splitlines()
 	app.songscoordinates = []
+	app.compositionnotes = []
+	app.compositionname = 'untitled.txt'
 	for num in range(len(app.songs)):
 		x0, y0 = app.width/4, app.height/3+(num*70)
 		x1, y1 = app.width*3/4, app.height/2.5+(num*70)
@@ -355,7 +359,7 @@ def composition_mousePressed(app, event):
 							   'D4#','F4#','G4#','A4#','C5#','D5#'])
 			index = app.flatsandsharps.index(sharp)
 			player.play_note(flatsandsharps[index], 0.4)
-			app.notePlayed = flatsandsharps[index]
+			app.compositionnotes.append(flatsandsharps[index])
 			flag = True
 			break
 
@@ -374,18 +378,44 @@ def composition_mousePressed(app, event):
 					index = app.keys.index(key)
 					player.play_note(letters[index], 0.36)
 					app.notePlayed = letters[index]
+					app.compositionnotes.append(letters[index])
 					break
 
 def composition_keyPressed(app, event):
 	if event.key == 'r':
 		appStarted(app)
 		app.mode = 'ScreenMode'
-		
+	if event.key == 'n':
+		app.compositionname = getUserInput(app, "Name your composition: ")
+	if event.key == 's':
+		convertComptoFile(app)
+	if event.key == 'k':
+		playComposition(app)
+
+def convertComptoFile(app):
+	pass
+
+def playComposition(app):
+	for x in range(len(app.compositionnotes)):
+			player.play_note(app.compositionnotes[x],0.35)
+
+def getUserInput(app, prompt):
+	return simpledialog.askstring('Input Name', prompt)
+
 def composition_redrawAll(app, canvas):
 	drawPiano(app, canvas)
 	(canvas.create_text(app.width/6, app.height/35, 
 	text = "Press 'r' to go back to the home screen!", font = 'Times 10 bold', fill = 'blue'))
-	
+	(canvas.create_text(app.width/8.5, app.height/20, 
+	text = "Press 'n' to name your file!", font = 'Times 10 bold', fill = 'blue'))
+	(canvas.create_text(app.width/6.1, app.height/13, 
+	text = "Press 'k' to listen to your composition!", font = 'Times 10 bold', fill = 'blue'))
+	(canvas.create_text(app.width/6.75, app.height/10, 
+	text = "Press 's' to save your composition!", font = 'Times 10 bold', fill = 'blue'))
+	canvas.create_text(app.width/2,app.height/2, text=f"{app.compositionnotes}")
+	(canvas.create_text(app.width/2, app.height/6,text=
+		f'{app.compositionname}', font = 'Times 50 bold', fill = 'red'))
+
 #run app
 def playPiano():
 	runApp(width=600, height=(600))
