@@ -1,18 +1,16 @@
 import math, copy, random
 from cmu_112_graphics import *
 import musicalbeeps
-import time
 #needed to play sounds
 player = musicalbeeps.Player(volume = 0.3, mute_output = False)
 
 def splashScreenMode_redrawAll(app, canvas):
     font = 'Arial 26 bold'
-    canvas.create_text(app.width/2, 150, text='PIANO GAME!', font=font)
-    canvas.create_text(app.width/2, 200, text='YAZSSSS!', font=font)
-    canvas.create_text(app.width/2, 250, text='Press any key for the game!', font=font)
+    canvas.create_text(app.width/2, 150, text='Piano Tones', font='Arial 80 bold', fill = 'red')
+    canvas.create_image(200, 70, image=ImageTk.PhotoImage(app.image1))
 
 def splashScreenMode_keyPressed(app, event):
-    app.mode = 'gameMode'
+	app.mode = 'gameMode'
 
 
 def appStarted(app):
@@ -22,6 +20,7 @@ def appStarted(app):
 	app.song = ' '
 	app.keys = []
 	app.flatsandsharps = []
+	app.image1 = app.loadImage('IMG_0104.jpg')
 	#saves x0,y0,x1,y1 values
 	for x in range(16):
 		(x0, y0, x1, y1) = getKeyBounds(app, x)
@@ -57,6 +56,7 @@ def appStarted(app):
 	app.num = 0
 	app.score = 0
 	app.gameOver = False
+	app.image1 = app.loadImage('IMG_0104.jpg')
 
 def gameMode_keyPressed(app, event):
 	if event.key == 'k':
