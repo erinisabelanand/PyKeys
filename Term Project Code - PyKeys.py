@@ -5,8 +5,19 @@ import time
 #needed to play sounds
 player = musicalbeeps.Player(volume = 0.3, mute_output = False)
 
+def splashScreenMode_redrawAll(app, canvas):
+    font = 'Arial 26 bold'
+    canvas.create_text(app.width/2, 150, text='PIANO GAME!', font=font)
+    canvas.create_text(app.width/2, 200, text='YAZSSSS!', font=font)
+    canvas.create_text(app.width/2, 250, text='Press any key for the game!', font=font)
+
+def splashScreenMode_keyPressed(app, event):
+    app.mode = 'gameMode'
+
+
 def appStarted(app):
 	#initalizes everything
+	app.mode = 'splashScreenMode'
 	app.label = 'Piano! :P'
 	app.song = ' '
 	app.keys = []
@@ -47,12 +58,12 @@ def appStarted(app):
 	app.score = 0
 	app.gameOver = False
 
-def keyPressed(app, event):
+def gameMode_keyPressed(app, event):
 	if event.key == 'k':
 		for x in range(len(app.notes)):
 			player.play_note(app.notes[x][0], app.notes[x][1])
 	
-def mousePressed(app, event):
+def gameMode_mousePressed(app, event):
 	#gets x and y coordinate from key click
 	x = event.x
 	y = event.y
@@ -130,7 +141,7 @@ def moveFallingBubble(app, drow):
 		app.bubblesy1 += drow
 
 
-def timerFired(app):
+def gameMode_timerFired(app):
 	moveFallingBubble(app, +25)
 	if (app.num < len(app.bubbles)-1) and (app.bubblesy > app.height or app.bubblesy1 > app.height):
 		app.num += 1
@@ -161,7 +172,7 @@ def drawPiano(app, canvas):
 	drawKey(app, canvas)
 	drawFlatsandSharps(app,canvas)
 
-def redrawAll(app, canvas):
+def gameMode_redrawAll(app, canvas):
 	drawPiano(app, canvas)
 	#draws all the bubbles (presently)
 	drawFallingBubble(app,canvas)
