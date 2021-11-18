@@ -20,15 +20,25 @@ def ScreenMode_redrawAll(app, canvas):
 	
 def ScreenMode_keyPressed(app, event):
 	if event.key == 'a':
-		app.mode = 'gameMode'
+		app.mode = 'intermediate'
+	if event.key == 'A':
+		app.mode = 'intermediate'
 	if event.key == 'f':
+		app.mode = 'freeStyle'
+	if event.key == 'F':
 		app.mode = 'freeStyle'
 	if event.key == 'c':
 		app.mode = 'composition'
+	if event.key == 'C':
+		app.mode = 'composition'
+
+###### APP STARTED #######
 
 def appStarted(app):
 	#initalizes everything
 	app.mode = 'composition'
+	app.mode = 'intermediate'
+	app.mode = 'gameMode'
 	app.mode = 'ScreenMode'
 	app.label = 'Piano! :P'
 	app.song = ' '
@@ -51,8 +61,41 @@ def appStarted(app):
 			app.flatsandsharps.append(details)
 	letters = (['C3','D3','E3','F3','G3','A3','B3',
 				'C4','D4','E4','F4','G4','A4','B4','C5','D5'])
-	mybonnie = open('mybonnie.txt',"r")
-	notes = (mybonnie.read())
+	app.timePassed = 0
+	app.num = 0
+	app.score = 0
+	app.gameOver = False
+	app.image1 = app.loadImage('Snake Logo.jpg')
+	app.image2 = app.scaleImage(app.image1, 1/3)
+	app.notePlayed = ""
+	app.songs = []
+	songlist = open('songs.txt',"r")
+	songs = (songlist.read())
+	app.songs = songs.splitlines()
+	app.songscoordinates = []
+	for num in range(len(app.songs)):
+		x0, y0 = app.width/4, app.height/3+(num*70)
+		x1, y1 = app.width*3/4, app.height/2.5+(num*70)
+		info = (x0,y0,x1,y1)
+		app.songscoordinates.append(info)
+
+######### INTERMEDIATE ############
+
+def intermediate_keyPressed(app,event):
+	pass
+
+def intermediate_mousePressed(app, event):
+	x = event.x
+	y = event.y
+	for coordinate in app.songscoordinates:
+		x0, y0, x1, y1 = coordinate
+		if x>x0 and x<x1 and y>y0 and y<y1:
+			index = app.songscoordinates.index(coordinate)
+			song = app.songs[index]
+			app.selected = f"{song}.txt"
+			app.mode = 'gameMode'
+	selection = open(app.selected,"r")
+	notes = (selection.read())
 	notes = notes.splitlines()
 	app.notes = []
 	for tuple in notes:
@@ -61,6 +104,7 @@ def appStarted(app):
 		currdur = float(currnoteanddur[1])
 		newcurrnoteanddur = (currnote, currdur)
 		app.notes.append(newcurrnoteanddur)
+	#my bonnie notes (hardcoded)
 	# app.notes = ([('G3', 0.3), ("E4", 0.3),("D4", 0.3),
 	# 	  ("C4", 0.3),("D4", 0.3), ("C4", 0.3),
 	# 	  ("A3", 0.3), ("G3", 0.4),("E3", 0.9),
@@ -68,22 +112,35 @@ def appStarted(app):
 	# 	  ("C4", 0.3),('C4',0.3),('B3', 0.3),
 	# 	  ("C4", 0.3), ("D4", 0.8)])
 	app.bubbles = []
+	flatsandsharps = (['C3#','E3b','F3#','G3#','A3#','C4#',
+						'D4#','F4#','G4#','A4#','C5#','D5#'])
+	letters = (['C3','D3','E3','F3','G3','A3','B3',
+			'C4','D4','E4','F4','G4','A4','B4','C5','D5'])
 	app.bubblesy = 0
 	app.bubblesy1 = app.height/10
 	for item in app.notes:
 		note = item[0]
-		index = letters.index(note)
-		x0, y0, x1, y1 = app.keys[index]
-		info = note, x0, app.bubblesy, x1, app.bubblesy1
+		try:
+			index = letters.index(note)
+			x0, y0, x1, y1 = app.keys[index]
+			info = note, x0, app.bubblesy, x1, app.bubblesy1
+		except:
+			index = flatsandsharps.index(note)
+			x0, y0, x1, y1 = app.flatsandsharps[index]
+			info = note, x0, app.bubblesy, x1, app.bubblesy1
 		app.bubbles.append(info)
-	app.timePassed = 0
-	app.num = 0
-	app.score = 0
-	app.gameOver = False
-	app.image1 = app.loadImage('Snake Logo.jpg')
-	app.image2 = app.scaleImage(app.image1, 1/3)
-	app.notePlayed = ""
-	
+
+def intermediate_redrawAll(app, canvas):
+	(canvas.create_text(app.width/2, app.height/5, 
+	text = "Pick a song:", font = 'Times 50 bold', fill = 'blue'))
+	for num in range(len(app.songs)):
+		x0, y0 = app.width/4, app.height/3+(num*70)
+		x1, y1 = app.width*3/4, app.height/2.5+(num*70)
+		(canvas.create_rectangle(x0, y0, x1, y1, fill = 'black'))
+		(canvas.create_text(app.width/2, (y0+y1)/2, text = 
+		app.songs[num], font = 'Times 20 bold', fill = 'white'))
+	pass
+
 ########## GAME MODE ###########
 def gameMode_keyPressed(app, event):
 	if event.key == 'k':
@@ -126,7 +183,7 @@ def gameMode_mousePressed(app, event):
 					index = app.keys.index(key)
 					player.play_note(letters[index], 0.36)
 					break
-	
+
 	if KeyClickedatRightTime(app, x,y):
 		app.score += 1
 
@@ -163,6 +220,7 @@ def drawFlatsandSharps(app,canvas):
 #draws the bubble in the place of the note to be played
 def drawFallingBubble(app, canvas):
 	# (x0, y0, x1, y1) = getKeyBounds(app, 4)
+
 	if app.bubblesy < app.height or app.bubblesy1 < app.height:
 		note, x0, y0, x1, y1 = app.bubbles[app.num]
 		canvas.create_oval(x0,app.bubblesy,x1,app.bubblesy1, fill = 'green')
@@ -176,13 +234,13 @@ def moveFallingBubble(app, drow):
 def gameMode_timerFired(app):
 	moveFallingBubble(app, +25)
 	if ((app.num < len(app.bubbles)-1) and (app.bubblesy > app.height
-	 			or app.bubblesy1 > app.height)):
+				or app.bubblesy1 > app.height)):
 		app.num += 1
 		app.bubblesy = 0
 		app.bubblesy1 = app.height/10
 	if app.num == len(app.bubbles)-1:
 		app.gameOver = True
-	
+		
 # check if the bubble is still in the dimensions of the screen
 # if not, remove from app.bubbles
 def BubbleonScreen(app):
@@ -270,8 +328,6 @@ def composition_keyPressed(app, event):
 
 def composition_redrawAll(app, event):
 	pass
-
-
 
 #run app
 def playPiano():
