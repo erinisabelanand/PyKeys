@@ -77,7 +77,7 @@ def appStarted(app):
 	app.songs = songs.splitlines()
 	app.songscoordinates = []
 	app.compositionnotes = []
-	app.compositionname = 'untitled.txt'
+	app.compositionname = 'NAME IT'
 	for num in range(len(app.songs)):
 		x0, y0 = app.width/4, app.height/3+(num*70)
 		x1, y1 = app.width*3/4, app.height/2.5+(num*70)
@@ -393,7 +393,16 @@ def composition_keyPressed(app, event):
 		playComposition(app)
 
 def convertComptoFile(app):
-	pass
+	f = open(f"{app.compositionname}.txt", "a")
+	notes = []
+	for item in app.compositionnotes:
+		new = (item, 0.30)
+		notes.append(new)
+	for element in notes:
+		note, dur = element 
+		f.write(f'{note}, {dur}\n')
+	s = open("songs.txt", "a")
+	s.write(f"\n{app.compositionname}")
 
 def playComposition(app):
 	for x in range(len(app.compositionnotes)):
