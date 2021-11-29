@@ -127,7 +127,7 @@ def intermediate_mousePressed(app, event):
 			app.notes2.append(chortnoteanddur)
 		newcurrnoteanddur = (currnote, currdur)
 		app.notes.append(newcurrnoteanddur)
-	print(app.notes2)
+
 	#my bonnie notes (hardcoded)
 	# app.notes = ([('G3', 0.3), ("E4", 0.3),("D4", 0.3),
 	# 	  ("C4", 0.3),("D4", 0.3), ("C4", 0.3),
@@ -150,12 +150,10 @@ def intermediate_mousePressed(app, event):
 		try:
 			index = letters.index(note)
 			x0, y0, x1, y1 = app.keys[index]
-			app.bubblesy1 += duration*10
 			info = note, x0, app.bubblesy, x1, app.bubblesy1
 		except:
 			index = flatsandsharps.index(note)
 			x0, y0, x1, y1 = app.flatsandsharps[index]
-			app.bubblesy1 += duration*10
 			info = note, x0, app.bubblesy, x1, app.bubblesy1
 			# app.bubbles2.append(info)
 		app.bubbles.append(info)
@@ -163,7 +161,6 @@ def intermediate_mousePressed(app, event):
 	app.bubblesy10 = app.height/10
 	if app.notes2 != []:
 		for item in app.notes2:
-			print(item)
 			note = item[0]
 			duration = float(item[1])
 			if note == 'xx':
@@ -620,6 +617,7 @@ def composition_mouseReleased(app,event):
 			app.t = 0
 			break
 
+
 	for key in app.keys:
 		x0 = key[0]
 		y0 = key[1]
@@ -638,7 +636,6 @@ def composition_mouseReleased(app,event):
 					app.compositionnotes.append((letters[index],seconds))
 					app.t = 0
 					break
-
 
 def composition_keyPressed(app, event):
 	#control piano with keys
@@ -729,7 +726,7 @@ def mistakeAnalysis_mousePressed(app, event):
 		app.mode = 'ScreenMode'
 	if len(app.bubbles)<10:
 		if x > app.width/3 and y > app.height/2.1 and x < app.width/1.5 and y < app.height/1.9:
-			appStarted(app)
+			refresh(app)
 			app.mode = 'gameMode'
 		elif x>app.width/3 and y > app.height/1.82 and x< app.width/1.5 and y < app.height/1.66:
 			appStarted(app)
