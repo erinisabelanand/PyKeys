@@ -93,6 +93,7 @@ def appStarted(app):
 	app.counter = 0
 	app.bubbles2 = []
 	app.notes2 = []
+	app.slowness = +30
 
 ######### INTERMEDIATE ############
 
@@ -169,12 +170,10 @@ def intermediate_mousePressed(app, event):
 				try:
 					index = letters.index(note)
 					x0, y0, x1, y1 = app.keys[index]
-					app.bubblesy10 += duration*10
 					info = note, x0, app.bubblesy0, x1, app.bubblesy10
 				except:
 					index = flatsandsharps.index(note)
 					x0, y0, x1, y1 = app.flatsandsharps[index]
-					app.bubblesy10 += duration*10
 					info = note, x0, app.bubblesy0, x1, app.bubblesy10
 				# app.bubbles2.append(info)
 			app.bubbles2.append(info)
@@ -377,13 +376,24 @@ def moveFallingBubble(app, drow):
 		app.bubblesy10 += drow
 
 def gameMode_timerFired(app):
-	moveFallingBubble(app, +30)
+	thex, they ,thex1, they1 = getKeyBounds(app, 0)
+	if app.bubblesy > they: 
+		if app.bubblesy1-app.bubblesy <= float(90.0):
+			app.slowness = +20
+		else:
+			app.slowness = +1
+	
+	
+	moveFallingBubble(app, app.slowness)
+	app.slowness = +20
 	
 	if ((app.num < len(app.bubbles)-1) and (app.bubblesy > app.height
 				or app.bubblesy1 > app.height)):
 		app.num += 1
 		app.bubblesy = 0
-		app.bubblesy1 = app.height/10
+		app.bubblesy1 = (app.height/10)+((app.notes[app.num][1])*100)
+		print(app.bubblesy1-app.bubblesy)
+		thex, they ,thex1, they1 = getKeyBounds(app, 0)
 		app.bubblesy0 = 0
 		app.bubblesy10 = app.height/10
 		app.counter += 1
