@@ -1,6 +1,6 @@
 import math, copy, random, time
 from cmu_112_graphics import *
-#shnorgin
+#module for piano keys
 import musicalbeeps
 #needed to play sounds
 import pygame
@@ -8,26 +8,36 @@ from pygame import mixer
 player = musicalbeeps.Player(volume = 0.3, mute_output = False)
 
 ##### SPLASH SCREEN ######
-# mixer.init()
-# mixer.music.load('No-Copyright-Music-_-It_s-Easy-_-3-Second-Intro_Outro-Music..ogg')
-# mixer.music.play()
+
+# sound syntax from: https://www.py4u.net/discuss/246333 ##
+mixer.init()
+song = pygame.mixer.Sound('No-Copyright-Music-_-It_s-Easy-_-3-Second-Intro_Outro-Music..ogg')
+song.play()
+song.set_volume(0.1)
+
+#draw home screen
 def ScreenMode_redrawAll(app, canvas):
 	#draw home screen button
 	canvas.create_rectangle(app.width/100,app.height/26, app.width/4, app.height/55, fill = 'blue')
-	(canvas.create_text(app.width/8, app.height/35, 
+	(canvas.create_text(app.width/8, app.height/35,
 	text = "Press 'i' for instructions", font = 'Times 10 bold', fill = 'white'))
+	#game mode text
 	(canvas.create_text(app.width/2,app.height/3.34,font=
 	'Times 20 bold', text= "Press 'a' for the game mode", fill = 'blue'))
+	#freestyle mode text
 	(canvas.create_text(app.width/2,app.height/3,font=
 	'Times 20 bold', text= "Press 'f' for the freestyle mode", fill = 'blue'))
+	#composition mode text
 	(canvas.create_text(app.width/2,app.height/3.7,font=
 	'Times 20 bold', text= "Press 'c' for the composition mode", fill = 'blue'))
 	(canvas.create_text(app.width/2, app.height/6, text='PyKeys', 
 	font='Times 80 bold', fill = 'black'))
+	#load logo
 	(canvas.create_image(app.width/2, app.height*2.5/4,
 	 image=ImageTk.PhotoImage(app.image2)))
 	
 def ScreenMode_keyPressed(app, event):
+	#transition to modes
 	if event.key == 'a':
 		app.mode = 'intermediate'
 	if event.key == 'A':
@@ -51,6 +61,7 @@ def ScreenMode_keyPressed(app, event):
 def appStarted(app):
 	#initalizes everything
 	app.t = time.time()
+	#initialize modes
 	app.mode = 'playPiano'
 	app.mode = 'practice'
 	app.mode = 'mistakeAnalysis'
@@ -61,8 +72,6 @@ def appStarted(app):
 	app.mode = 'difficulty'
 	app.mode = 'ScreenMode'
 	app.label = 'Piano! :P'
-	app.color = 'white'
-	app.color2 = 'black'
 	app.song = ' '
 	app.text = ""
 	app.keys = []
@@ -84,6 +93,8 @@ def appStarted(app):
 			y1=  3*app.height/3.5
 			details = (x0,y0,x1,y1)
 			app.flatsandsharps.append(details)
+	#list of letters
+	#list of flatsandsharps
 	letters = (['C3','D3','E3','F3','G3','A3','B3',
 				'C4','D4','E4','F4','G4','A4','B4','C5','D5'])
 	flatsandsharps = (['C3#','E3b','F3#','G3#','A3#','C4#',
@@ -97,6 +108,7 @@ def appStarted(app):
 	app.image2 = app.scaleImage(app.image1, 1/3)
 	app.notePlayed = ""
 	app.songs = []
+	#create list of songs
 	songlist = open('songs.txt',"r")
 	songs = (songlist.read())
 	app.songs = songs.splitlines()
@@ -118,8 +130,8 @@ def appStarted(app):
 	app.seconds = 0
 	app.highscore = 0
 
-
 ######### INSTRUCTION #############
+
 def instruction_redrawAll(app,canvas):
 	#draw home screen button
 	canvas.create_rectangle(app.width/100,app.height/26, app.width/8, app.height/55, fill = 'blue')
@@ -134,9 +146,7 @@ def instruction_mousePressed(app,event):
 	if x > app.width/100 and x < app.width/8 and y< app.height/26 and y > app.height/55:
 		app.mode = 'ScreenMode'
 
-
 ######### INTERMEDIATE ############
-
 
 def intermediate_keyPressed(app,event):
 	pass
@@ -144,15 +154,19 @@ def intermediate_keyPressed(app,event):
 def intermediate_mousePressed(app, event):
 	x = event.x
 	y = event.y
+	#if home screen button pressed
 	if x > app.width/100 and x < app.width/8 and y< app.height/26 and y > app.height/55:
 		app.mode = 'ScreenMode'
+	#select songs
 	for coordinate in app.songscoordinates:
 		x0, y0, x1, y1 = coordinate
 		if x>x0 and x<x1 and y>y0 and y<y1:
 			index = app.songscoordinates.index(coordinate)
 			song = app.songs[index]
 			app.selected = f"{song}.txt"
+			#transition to  mode to choose difficulty
 			app.mode = 'difficulty'
+			#set variables for highscore for song
 			highestscore(app)
 	selection = open(app.selected,"r")
 	notes = (selection.read())
@@ -178,9 +192,9 @@ def intermediate_mousePressed(app, event):
 	# 	  ('G3', 0.3), ("E4", 0.3),("D4", 0.3),
 	# 	  ("C4", 0.3),('C4',0.3),('B3', 0.3),
 	# 	  ("C4", 0.3), ("D4", 0.8)])
+
 	app.bubbles = []
 	app.bubbles2 = []
-	# app.bubbles2 = []
 	flatsandsharps = (['C3#','E3b','F3#','G3#','A3#','C4#',
 						'D4#','F4#','G4#','A4#','C5#','D5#'])
 	letters = (['C3','D3','E3','F3','G3','A3','B3',
@@ -190,6 +204,7 @@ def intermediate_mousePressed(app, event):
 	for item in app.notes:
 		note = item[0]
 		duration = item[1]
+		#index into notes
 		try:
 			index = letters.index(note)
 			x0, y0, x1, y1 = app.keys[index]
@@ -202,6 +217,7 @@ def intermediate_mousePressed(app, event):
 		app.bubbles.append(info)
 	app.bubblesy0 = 0
 	app.bubblesy10 = app.height/10
+	#chords
 	if app.notes2 != []:
 		for item in app.notes2:
 			note = item[0]
@@ -217,7 +233,7 @@ def intermediate_mousePressed(app, event):
 					index = flatsandsharps.index(note)
 					x0, y0, x1, y1 = app.flatsandsharps[index]
 					info = note, x0, app.bubblesy0, x1, app.bubblesy10
-				# app.bubbles2.append(info)
+				
 			app.bubbles2.append(info)
 
 def intermediate_redrawAll(app, canvas):
@@ -227,6 +243,7 @@ def intermediate_redrawAll(app, canvas):
 	text = "Home Screen", font = 'Times 10 bold', fill = 'blue'))
 	(canvas.create_text(app.width/2, app.height/5, 
 	text = "Pick a song:", font = 'Times 50 bold', fill = 'blue'))
+	#draw each soong
 	for num in range(len(app.songs)):
 		x0, y0 = app.width/4, app.height/3+(num*70)
 		x1, y1 = app.width*3/4, app.height/2.5+(num*70)
@@ -237,13 +254,18 @@ def intermediate_redrawAll(app, canvas):
 	# text = "Press 'r' to go back to the home screen!", font = 'Times 10 bold', fill = 'blue'))
 	
 def findHighestScore(app):
+	#open file
 	f = open("scores.txt", 'r')
 	newscores = []
+	#loops through file
 	for line in f:
+		if repr(line) == repr("\n"):
+			continue
 		songsandscore = line.split(',')
 		song, score = songsandscore[0], int(songsandscore[1])
 		selection = app.selected
 		selection = selection[:len(selection)-4]
+		#check if new score is greater
 		if str(song) == selection and app.score > score:
 			newline = song, int(app.score)
 			newscores.append(newline)
@@ -253,12 +275,17 @@ def findHighestScore(app):
 			newline = song, score
 			newscores.append(newline)
 	os.remove("scores.txt")
+	#creates new scores file and stores everything
 	f = open("scores.txt", 'a')
 	for element in newscores:
+		if element == "":
+			continue
 		f.write(f'{element[0]}, {element[1]}\n')
 
 ########## SELECT DIFFICULTY #############
+
 def difficulty_redrawAll(app, canvas):
+	#select difficulty text
 	(canvas.create_text(app.width/2, app.height/5, text='Select Difficulty', 
 	font='Times 60 bold', fill = 'purple'))
 	(canvas.create_rectangle(app.width/4, app.height/3+50, app.width*3/4, app.height/2.5+(50), fill = 'black'))
@@ -270,7 +297,6 @@ def difficulty_redrawAll(app, canvas):
 		'Moderate', font = 'Times 20 bold', fill = 'white'))
 	(canvas.create_text(app.width/2, ((app.height/3+(3*50))+(app.height/2.5+(3*50)))/2, text = 
 		'Difficult', font = 'Times 20 bold', fill = 'white'))
-
 
 def difficulty_mousePressed(app, event):
 	x = event.x
@@ -285,9 +311,10 @@ def difficulty_mousePressed(app, event):
 		app.difficulty = 'difficult'
 		app.mode = 'gameMode'
 
-
 ########## GAME MODE ###########
+
 def gameMode_keyPressed(app, event):
+	#control with keys (don't need anymore)
 	# if event.key == 'k':
 	# 	for x in range(len(app.notes)):
 	# 		player.play_note(app.notes[x][0], app.notes[x][1])
@@ -309,7 +336,6 @@ def gameMode_keyPressed(app, event):
 	# 	app.notePlayed = flatsandsharps[index]
 	pass
 
-	
 def gameMode_mousePressed(app, event):
 	#gets x and y coordinate from key click
 	x = event.x
@@ -322,44 +348,7 @@ def gameMode_mousePressed(app, event):
 		for x in range(len(app.notes)):
 			player.play_note(app.notes[x][0], app.notes[x][1])
 
-	# flag = False
-	# letters = (['C3','D3','E3','F3','G3','A3','B3',
-	# 			'C4','D4','E4','F4','G4','A4','B4',
-	# 			'C5','D5'])
-	# for sharp in app.flatsandsharps:
-	# 	x00 = sharp[0]
-	# 	y00 = sharp[1]
-	# 	x10 = sharp[2]
-	# 	y10 = sharp[3]
-	# 	if x > x00 and x < x10 and y > y00 and y < y10:
-	# 		flatsandsharps = (['C3#','E3b','F3#','G3#','A3#','C4#',
-	# 						   'D4#','F4#','G4#','A4#','C5#','D5#'])
-	# 		index = app.flatsandsharps.index(sharp)
-	# 		player.play_note(flatsandsharps[index], 0.4)
-	# 		flag = True
-	# 		break
-
-	# for key in app.keys:
-	# 	x0 = key[0]
-	# 	y0 = key[1]
-	# 	x1 = key[2]
-	# 	y1 = key[3]
-	# 	for sharp in app.flatsandsharps:
-	# 		x00 = sharp[0]
-	# 		y00 = sharp[1]
-	# 		x10 = sharp[2]
-	# 		y10 = sharp[3]
-	# 		if flag != True:
-	# 			if (x > x0 and x < x1 and y > y0 and y < y1):
-	# 				index = app.keys.index(key)
-	# 				player.play_note(letters[index], 0.36)
-	# 				break
-
-
-
-	# if KeyClickedatRightTime(app, x,y):
-	# 	app.score += 1
-
+#make each key have duration
 def gameMode_mouseReleased(app,event):
 	x = event.x
 	y = event.y
@@ -423,7 +412,6 @@ def gameMode_mouseReleased(app,event):
 	if app.gameOver == True and x< app.width/1.25 and y> app.height/3.25 and x> app.width/5 and y< app.height/2.75:
 		app.mode = 'mistakeAnalysis'
 	
-
 #gets x0, y0, x1, y1 values
 def getKeyBounds(app, col):
 	#gets the values depending on the column number
@@ -458,15 +446,22 @@ def drawFlatsandSharps(app,canvas):
 def drawFallingBubble(app, canvas):
 	# (x0, y0, x1, y1) = getKeyBounds(app, 4)
 	if app.bubblesy < app.height or app.bubblesy1 < app.height:
+		letters = (['C3','D3','E3','F3','G3','A3','B3','C4'
+	           ,'D4','E4','F4','G4','A4','B4','C5','D5'])
+		flatsandsharps = (['C3#','E3b','F3#','G3#','A3#','C4#',
+							   'D4#','F4#','G4#','A4#','C5#','D5#'])
 		note, x0, y0, x1, y1 = app.bubbles[app.num]
+		if note in letters: 
 		# note, x00, y00, x10, y10 = app.bubbles2[app.num]
-		canvas.create_oval(x0,app.bubblesy,x1,app.bubblesy1, fill = 'purple')
+			canvas.create_oval(x0,app.bubblesy,x1,app.bubblesy1, fill = 'purple')
+		else:
+			canvas.create_oval(x0,app.bubblesy,x1,app.bubblesy1, fill = 'blue')
 		if app.notes2 != []:
 			note, x00, y00, x11, y11 = app.bubbles2[app.num]
 			if note == 'xx':
 				pass
 			else:
-				canvas.create_oval(x00,app.bubblesy0,x11,app.bubblesy10, fill = 'blue')
+				canvas.create_oval(x00,app.bubblesy0,x11,app.bubblesy10, fill = 'cyan')
 
 # target: to make the bubble fall down the screen in the correct order
 def moveFallingBubble(app, drow):
@@ -476,6 +471,7 @@ def moveFallingBubble(app, drow):
 		app.bubblesy0 += drow
 		app.bubblesy10 += drow
 
+#default slowness for modes
 def difficultslowness(app):
 	if app.bubblesy1-app.bubblesy <= float(90):
 		slowness = +35
@@ -545,7 +541,6 @@ def gameMode_timerFired(app):
 	elif app.difficulty == 'difficult':
 		app.slowness = +40
 
-	
 	if ((app.num < len(app.bubbles)-1) and (app.bubblesy > app.height
 				or app.bubblesy1 > app.height)):
 		app.num += 1
@@ -559,6 +554,7 @@ def gameMode_timerFired(app):
 		findHighestScore(app)
 		app.gameOver = True
 
+#decide where to increment score
 def KeyClickedatRightTime(app, x, y):
 	thex, they ,thex1, they1 = getKeyBounds(app, 0)
 	letters = (['C3','D3','E3','F3','G3','A3','B3',
@@ -584,9 +580,12 @@ def drawPiano(app, canvas):
 	drawKey(app, canvas)
 	drawFlatsandSharps(app,canvas)
 
+#set app.highscore
 def highestscore(app):
 	f = open("scores.txt", 'r')
 	for line in f:
+		if repr(line) == repr('\n'):
+			continue
 		song, score = line.split(',')
 		if f"{song}.txt" == app.selected:
 			app.highscore = int(score)
@@ -616,6 +615,7 @@ def gameMode_redrawAll(app, canvas):
 	font = 'Times 20 bold', text = f"SCORE = {app.score}"))
 
 ###### FREESTYLE #######
+
 def freeStyle_mousePressed(app, event):
 	#gets x and y coordinate from key click
 	x = event.x
@@ -634,6 +634,7 @@ def freeStyle_redrawAll(app, canvas):
 	# (canvas.create_text(app.width/6, app.height/35, 
 	# text = "Press 'r' to go back to the home screen!", font = 'Times 10 bold', fill = 'blue'))
 
+#duration of keys with mouse press
 def freeStyle_mouseReleased(app, event):
 	seconds = time.time()-app.t
 	if seconds < 0.36: 
@@ -725,6 +726,7 @@ def freeStyle_mouseReleased(app, event):
 		app.notePlayed = flatsandsharps[index]'''
 
 ##### COMPOSITION #####
+
 def composition_mousePressed(app, event):
 	#gets x and y coordinate from key click
 	x = event.x
@@ -742,44 +744,9 @@ def composition_mousePressed(app, event):
 	if x> app.width/100 and x < app.width/4.25 and y > app.height/15 and y < app.height/11.25:
 		playComposition(app)
 	if x>app.width/100 and x < app.width/4.8 and y > app.height/11 and y < app.height/9:
-		convertComptoFile(app)
-		app.text = "File Saved!"
-	
-	# letters = (['C3','D3','E3','F3','G3','A3','B3',
-	# 			'C4','D4','E4','F4','G4','A4','B4',
-	# 			'C5','D5'])
-	# for sharp in app.flatsandsharps:
-	# 	x00 = sharp[0]
-	# 	y00 = sharp[1]
-	# 	x10 = sharp[2]
-	# 	y10 = sharp[3]
-	# 	if x > x00 and x < x10 and y > y00 and y < y10:
-	# 		flatsandsharps = (['C3#','E3b','F3#','G3#','A3#','C4#',
-	# 						   'D4#','F4#','G4#','A4#','C5#','D5#'])
-	# 		index = app.flatsandsharps.index(sharp)
-	# 		player.play_note(flatsandsharps[index], 0.4)
-	# 		app.compositionnotes.append(flatsandsharps[index])
-	# 		flag = True
-	# 		break
-
-	# for key in app.keys:
-	# 	x0 = key[0]
-	# 	y0 = key[1]
-	# 	x1 = key[2]
-	# 	y1 = key[3]
-	# 	for sharp in app.flatsandsharps:
-	# 		x00 = sharp[0]
-	# 		y00 = sharp[1]
-	# 		x10 = sharp[2]
-	# 		y10 = sharp[3]
-	# 		if flag != True:
-	# 			if (x > x0 and x < x1 and y > y0 and y < y1):
-	# 				index = app.keys.index(key)
-	# 				player.play_note(letters[index], 0.36)
-	# 				app.notePlayed = letters[index]
-	# 				app.compositionnotes.append(letters[index])
-	# 				break
-
+		if app.compositionnotes != []:
+			convertComptoFile(app)
+			app.text = "File Saved!"
 
 def composition_mouseReleased(app,event):
 	x = event.x
@@ -806,7 +773,6 @@ def composition_mouseReleased(app,event):
 			flag = True
 			app.t = 0
 			break
-
 
 	for key in app.keys:
 		x0 = key[0]
@@ -849,7 +815,7 @@ def composition_keyPressed(app, event):
 		app.compositionnotes.append(flatsandsharps[index])'''
 	pass
 
-
+#create file
 def convertComptoFile(app):
 	f = open(f"{app.compositionname}.txt", "a")
 	notes = []
@@ -864,6 +830,7 @@ def convertComptoFile(app):
 	s = open("scores.txt", "a")
 	s.write(f"\n{app.compositionname}, 0")
 
+#loop through app.compositionnnotes and play note
 def playComposition(app):
 	for x in range(len(app.compositionnotes)):
 			player.play_note(app.compositionnotes[x][0],app.compositionnotes[x][1])
@@ -900,6 +867,7 @@ def mistakeAnalysis_keyPressed(app, event):
 	pass	
 
 def mistakes(app):
+	#find where most mistakes were made
 	maxmistakes = max(app.mistakesstart, app.mistakesmiddle, app.mistakesend)
 	if app.mistakesstart == maxmistakes:
 		analyze = 'start'
@@ -919,6 +887,7 @@ def mistakeAnalysis_mousePressed(app, event):
 	if len(app.bubbles)<10:
 		if x > app.width/3 and y > app.height/2.1 and x < app.width/1.5 and y < app.height/1.9:
 			refresh(app)
+			highestscore(app)
 			app.mode = 'gameMode'
 		elif x>app.width/3 and y > app.height/1.82 and x< app.width/1.5 and y < app.height/1.66:
 			appStarted(app)
@@ -996,9 +965,8 @@ def mistakeAnalysis_redrawAll(app, canvas):
 		(canvas.create_text(app.width/2, app.height/1.75,
 	text = "Try a new song", font = 'Times 28 bold', fill = 'purple'))
 
-
 ###### PRACTICE ########
-
+#refresh key variables
 def refresh(app):
 	app.bubbles = []
 	flatsandsharps = (['C3#','E3b','F3#','G3#','A3#','C4#',
@@ -1026,6 +994,7 @@ def refresh(app):
 def practice_keyPressed(app, event):
 	pass
 	
+#figure out which section of song has most mistakes
 def whichSection(app):
 	analyzed = mistakes(app)
 	total = len(app.bubbles)
@@ -1054,7 +1023,6 @@ def practice_mousePressed(app, event):
 			appStarted(app)
 			refresh(app)
 			app.mode = 'practice'
-	
 	
 def practice_mouseReleased(app,event):
 	x = event.x
@@ -1127,10 +1095,9 @@ def practice_timerFired(app):
 		app.num += 1
 		app.bubblesy = 0
 		app.bubblesy1 = (app.height/10)+((app.notes[app.num][1])*100)
-		app.counter += 1
+		app.counter += 1	
 	if app.num == len(app.bubbles)-1:
 		app.gameOver = True
-
 
 def practice_redrawAll(app, canvas):
 	canvas.create_rectangle(app.width/100, app.height/24, app.width/2.65, app.height/16, fill = 'yellow')
@@ -1163,3 +1130,4 @@ def main():
 if __name__ == '__main__':
 	main()
 
+#ENJOY
