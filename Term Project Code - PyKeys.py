@@ -3,10 +3,19 @@ from cmu_112_graphics import *
 #shnorgin
 import musicalbeeps
 #needed to play sounds
+import pygame
+from pygame import mixer
 player = musicalbeeps.Player(volume = 0.3, mute_output = False)
 
 ##### SPLASH SCREEN ######
+# mixer.init()
+# mixer.music.load('No-Copyright-Music-_-It_s-Easy-_-3-Second-Intro_Outro-Music..ogg')
+# mixer.music.play()
 def ScreenMode_redrawAll(app, canvas):
+	#draw home screen button
+	canvas.create_rectangle(app.width/100,app.height/26, app.width/4, app.height/55, fill = 'blue')
+	(canvas.create_text(app.width/8, app.height/35, 
+	text = "Press 'i' for instructions", font = 'Times 10 bold', fill = 'white'))
 	(canvas.create_text(app.width/2,app.height/3.34,font=
 	'Times 20 bold', text= "Press 'a' for the game mode", fill = 'blue'))
 	(canvas.create_text(app.width/2,app.height/3,font=
@@ -31,6 +40,11 @@ def ScreenMode_keyPressed(app, event):
 		app.mode = 'composition'
 	if event.key == 'C':
 		app.mode = 'composition'
+	if event.key == 'i':
+		app.mode = 'instruction'
+	if event.key == 'I':
+		app.mode = 'instruction'
+
 
 ###### APP STARTED #######
 
@@ -41,14 +55,21 @@ def appStarted(app):
 	app.mode = 'practice'
 	app.mode = 'mistakeAnalysis'
 	app.mode = 'composition'
+	app.mode = 'instruction'
 	app.mode = 'intermediate'
 	app.mode = 'gameMode'
+	app.mode = 'difficulty'
 	app.mode = 'ScreenMode'
 	app.label = 'Piano! :P'
+	app.color = 'white'
+	app.color2 = 'black'
 	app.song = ' '
+	app.text = ""
 	app.keys = []
 	app.flatsandsharps = []
 	app.image1 = app.loadImage('Snake Logo.jpg')
+	app.image3 = app.loadImage('help.png')
+	app.image4 = app.scaleImage(app.image3, 1/2.79)
 	#saves x0,y0,x1,y1 values
 	for x in range(16):
 		(x0, y0, x1, y1) = getKeyBounds(app, x)
@@ -94,8 +115,28 @@ def appStarted(app):
 	app.bubbles2 = []
 	app.notes2 = []
 	app.slowness = +30
+	app.seconds = 0
+	app.highscore = 0
+
+
+######### INSTRUCTION #############
+def instruction_redrawAll(app,canvas):
+	#draw home screen button
+	canvas.create_rectangle(app.width/100,app.height/26, app.width/8, app.height/55, fill = 'blue')
+	(canvas.create_text(app.width/15, app.height/35, 
+	text = "Home Screen", font = 'Times 10 bold', fill = 'white'))
+	(canvas.create_image(app.width/2, app.height/2,
+	 image=ImageTk.PhotoImage(app.image4)))
+
+def instruction_mousePressed(app,event):
+	x = event.x
+	y = event.y
+	if x > app.width/100 and x < app.width/8 and y< app.height/26 and y > app.height/55:
+		app.mode = 'ScreenMode'
+
 
 ######### INTERMEDIATE ############
+
 
 def intermediate_keyPressed(app,event):
 	pass
@@ -111,7 +152,8 @@ def intermediate_mousePressed(app, event):
 			index = app.songscoordinates.index(coordinate)
 			song = app.songs[index]
 			app.selected = f"{song}.txt"
-			app.mode = 'gameMode'
+			app.mode = 'difficulty'
+			highestscore(app)
 	selection = open(app.selected,"r")
 	notes = (selection.read())
 	notes = notes.splitlines()
@@ -194,6 +236,55 @@ def intermediate_redrawAll(app, canvas):
 	# (canvas.create_text(app.width/6, app.height/35, 
 	# text = "Press 'r' to go back to the home screen!", font = 'Times 10 bold', fill = 'blue'))
 	
+def findHighestScore(app):
+	f = open("scores.txt", 'r')
+	newscores = []
+	for line in f:
+		songsandscore = line.split(',')
+		song, score = songsandscore[0], int(songsandscore[1])
+		selection = app.selected
+		selection = selection[:len(selection)-4]
+		if str(song) == selection and app.score > score:
+			newline = song, int(app.score)
+			newscores.append(newline)
+		else:
+			songsandscore = line.split(',')
+			song, score = songsandscore[0], int(songsandscore[1])
+			newline = song, score
+			newscores.append(newline)
+	os.remove("scores.txt")
+	f = open("scores.txt", 'a')
+	for element in newscores:
+		f.write(f'{element[0]}, {element[1]}\n')
+
+########## SELECT DIFFICULTY #############
+def difficulty_redrawAll(app, canvas):
+	(canvas.create_text(app.width/2, app.height/5, text='Select Difficulty', 
+	font='Times 60 bold', fill = 'purple'))
+	(canvas.create_rectangle(app.width/4, app.height/3+50, app.width*3/4, app.height/2.5+(50), fill = 'black'))
+	(canvas.create_rectangle(app.width/4, app.height/3+(2*50), app.width*3/4, app.height/2.5+(2*50), fill = 'black'))
+	(canvas.create_rectangle(app.width/4, app.height/3+(3*50), app.width*3/4, app.height/2.5+(3*50), fill = 'black'))
+	(canvas.create_text(app.width/2, ((app.height/3+50)+(app.height/2.5+(50)))/2, text = 
+		'Easy', font = 'Times 20 bold', fill = 'white'))
+	(canvas.create_text(app.width/2, ((app.height/3+(2*50))+(app.height/2.5+(2*50)))/2, text = 
+		'Moderate', font = 'Times 20 bold', fill = 'white'))
+	(canvas.create_text(app.width/2, ((app.height/3+(3*50))+(app.height/2.5+(3*50)))/2, text = 
+		'Difficult', font = 'Times 20 bold', fill = 'white'))
+
+
+def difficulty_mousePressed(app, event):
+	x = event.x
+	y = event.y
+	if x > app.width/4 and y > app.height/3+50 and x < app.width*3/4 and y < app.height/2.5+(50):
+		app.difficulty = 'easy'
+		app.mode = 'gameMode'
+	elif (x > app.width/4 and y > app.height/3+(2*50) and x < app.width*3/4 and y < app.height/2.5+(2*50)):
+		app.difficulty = 'moderate'
+		app.mode = 'gameMode'
+	elif (x > app.width/4 and y > app.height/3+(3*50) and x < app.width*3/4 and y < app.height/2.5+(3*50)):
+		app.difficulty = 'difficult'
+		app.mode = 'gameMode'
+
 
 ########## GAME MODE ###########
 def gameMode_keyPressed(app, event):
@@ -264,6 +355,8 @@ def gameMode_mousePressed(app, event):
 	# 				player.play_note(letters[index], 0.36)
 	# 				break
 
+
+
 	# if KeyClickedatRightTime(app, x,y):
 	# 	app.score += 1
 
@@ -287,6 +380,7 @@ def gameMode_mouseReleased(app,event):
 							   'D4#','F4#','G4#','A4#','C5#','D5#'])
 			index = app.flatsandsharps.index(sharp)
 			player.play_note(flatsandsharps[index], seconds)
+			app.seconds = seconds
 			flag = True
 			break
 
@@ -304,10 +398,17 @@ def gameMode_mouseReleased(app,event):
 				if (x > x0 and x < x1 and y > y0 and y < y1):
 					index = app.keys.index(key)
 					player.play_note(letters[index], seconds)
+					app.seconds = seconds
 					break
 
 	if KeyClickedatRightTime(app, x,y):
-		app.score += 1
+		note, x0, y0, x1, y1 = app.bubbles[app.num]
+		item =  app.notes[app.num]
+		duration = item[1]
+		if abs(duration-app.seconds) <= 0.3:
+			app.score += 1
+		else:
+			app.score += 0.5
 	else:
 		total = len(app.bubbles)
 		division1 = total//3
@@ -359,13 +460,13 @@ def drawFallingBubble(app, canvas):
 	if app.bubblesy < app.height or app.bubblesy1 < app.height:
 		note, x0, y0, x1, y1 = app.bubbles[app.num]
 		# note, x00, y00, x10, y10 = app.bubbles2[app.num]
-		canvas.create_oval(x0,app.bubblesy,x1,app.bubblesy1, fill = 'green')
+		canvas.create_oval(x0,app.bubblesy,x1,app.bubblesy1, fill = 'purple')
 		if app.notes2 != []:
 			note, x00, y00, x11, y11 = app.bubbles2[app.num]
 			if note == 'xx':
 				pass
 			else:
-				canvas.create_oval(x00,app.bubblesy0,x11,app.bubblesy10, fill = 'red')
+				canvas.create_oval(x00,app.bubblesy0,x11,app.bubblesy10, fill = 'blue')
 
 # target: to make the bubble fall down the screen in the correct order
 def moveFallingBubble(app, drow):
@@ -375,45 +476,121 @@ def moveFallingBubble(app, drow):
 		app.bubblesy0 += drow
 		app.bubblesy10 += drow
 
+def difficultslowness(app):
+	if app.bubblesy1-app.bubblesy <= float(90):
+		slowness = +35
+	elif app.bubblesy1-app.bubblesy <= float(100):
+		slowness = +20
+	elif app.bubblesy1-app.bubblesy <= float(110):
+		slowness = +15
+	elif app.bubblesy1-app.bubblesy <= float(120):
+		slowness = +10
+	elif app.bubblesy1-app.bubblesy <= float(130):
+		slowness = +8
+	elif app.bubblesy1-app.bubblesy <= float(140):
+		slowness = +3
+	else: 
+		slowness = +1
+	return slowness
+
+def moderateslowness(app):
+	if app.bubblesy1-app.bubblesy <= float(90):
+		slowness = +30
+	elif app.bubblesy1-app.bubblesy <= float(100):
+		slowness = +15
+	elif app.bubblesy1-app.bubblesy <= float(110):
+		slowness = +10
+	elif app.bubblesy1-app.bubblesy <= float(120):
+		slowness = +5
+	elif app.bubblesy1-app.bubblesy <= float(130):
+		slowness = +3
+	elif app.bubblesy1-app.bubblesy <= float(140):
+		slowness = +2
+	else: 
+		slowness = +1
+	return slowness
+
+def easyslowness(app):
+	if app.bubblesy1-app.bubblesy <= float(90):
+		slowness = +25
+	elif app.bubblesy1-app.bubblesy <= float(100):
+		slowness = +13
+	elif app.bubblesy1-app.bubblesy <= float(110):
+		slowness = +12
+	elif app.bubblesy1-app.bubblesy <= float(120):
+		slowness = +4
+	elif app.bubblesy1-app.bubblesy <= float(130):
+		slowness = +3
+	elif app.bubblesy1-app.bubblesy <= float(140):
+		slowness = +2
+	else: 
+		slowness = +1
+	return slowness
+
 def gameMode_timerFired(app):
 	thex, they ,thex1, they1 = getKeyBounds(app, 0)
 	if app.bubblesy > they: 
-		if app.bubblesy1-app.bubblesy <= float(90.0):
-			app.slowness = +20
-		else:
-			app.slowness = +1
-	
-	
+		if app.difficulty == 'easy':
+			app.slowness = easyslowness(app)
+		elif app.difficulty == 'moderate':
+			app.slowness = moderateslowness(app)
+		elif app.difficulty == 'difficult':
+			app.slowness = difficultslowness(app)
+
 	moveFallingBubble(app, app.slowness)
-	app.slowness = +20
+	if app.difficulty == 'easy':
+		app.slowness = +25
+	elif app.difficulty == 'moderate':
+		app.slowness = +35
+	elif app.difficulty == 'difficult':
+		app.slowness = +40
+
 	
 	if ((app.num < len(app.bubbles)-1) and (app.bubblesy > app.height
 				or app.bubblesy1 > app.height)):
 		app.num += 1
 		app.bubblesy = 0
 		app.bubblesy1 = (app.height/10)+((app.notes[app.num][1])*100)
-		print(app.bubblesy1-app.bubblesy)
 		thex, they ,thex1, they1 = getKeyBounds(app, 0)
 		app.bubblesy0 = 0
 		app.bubblesy10 = app.height/10
 		app.counter += 1
 	if app.num == len(app.bubbles)-1:
+		findHighestScore(app)
 		app.gameOver = True
 
 def KeyClickedatRightTime(app, x, y):
 	thex, they ,thex1, they1 = getKeyBounds(app, 0)
-	for num in range(len(app.bubbles)):
-		note, x0, y0, x1, y1 = app.bubbles[num]
-		if app.bubblesy>they and app.bubblesy1 < they1 and y>they and y < they1:
+	letters = (['C3','D3','E3','F3','G3','A3','B3',
+				'C4','D4','E4','F4','G4','A4','B4',
+				'C5','D5'])
+	flatsandsharps = (['C3#','E3b','F3#','G3#','A3#','C4#',
+							   'D4#','F4#','G4#','A4#','C5#','D5#'])
+	note, x0, y0, x1, y1 = app.bubbles[app.num]
+	if (app.bubblesy>=they or app.bubblesy1 >= they) and y>=they and y <=they1:
+		try:
+			index = letters.index(note)
+			x00, y00, x10, y10 = app.keys[index]
+		except:
+			index = flatsandsharps.index(note)
+			x00, y00, x10, y10 = app.flatsandsharps[index]
+		if (x>x00 and x<x10):
 			return True
-		else:
-			return False
+	else:
+		return False
 
 #draws the skeleton of the piano
 def drawPiano(app, canvas):
 	drawKey(app, canvas)
 	drawFlatsandSharps(app,canvas)
 
+def highestscore(app):
+	f = open("scores.txt", 'r')
+	for line in f:
+		song, score = line.split(',')
+		if f"{song}.txt" == app.selected:
+			app.highscore = int(score)
+	
 def gameMode_redrawAll(app, canvas):
 	#draw the listen to song button
 	canvas.create_rectangle(app.width/100, app.height/24, app.width/2.65, app.height/16, fill = 'yellow')
@@ -426,6 +603,8 @@ def gameMode_redrawAll(app, canvas):
 	drawPiano(app, canvas)
 	#draws all the bubbles (presently)
 	drawFallingBubble(app,canvas)
+	(canvas.create_text(app.width/12, app.height/13, 
+	text = f"Highest Score = {app.highscore}", font = 'Times 10 bold', fill = 'blue'))
 	if app.gameOver == True:
 		(canvas.create_text(app.width/2, app.height/4,text=
 		f'Final Score = {app.score}', font = 'Times 50 bold', fill = 'blue'))
@@ -564,6 +743,7 @@ def composition_mousePressed(app, event):
 		playComposition(app)
 	if x>app.width/100 and x < app.width/4.8 and y > app.height/11 and y < app.height/9:
 		convertComptoFile(app)
+		app.text = "File Saved!"
 	
 	# letters = (['C3','D3','E3','F3','G3','A3','B3',
 	# 			'C4','D4','E4','F4','G4','A4','B4',
@@ -681,6 +861,8 @@ def convertComptoFile(app):
 		f.write(f'{note}, {dur}\n')
 	s = open("songs.txt", "a")
 	s.write(f"\n{app.compositionname}")
+	s = open("scores.txt", "a")
+	s.write(f"\n{app.compositionname}, 0")
 
 def playComposition(app):
 	for x in range(len(app.compositionnotes)):
@@ -710,7 +892,7 @@ def composition_redrawAll(app, canvas):
 	canvas.create_text(app.width/2,app.height/2, text=f"{app.compositionnotes}")
 	(canvas.create_text(app.width/2, app.height/6,text=
 		f'{app.compositionname}', font = 'Times 50 bold', fill = 'red'))
-
+	canvas.create_text(app.width/16.5, app.height/8, text = f"{app.text}", font = 'Times 10 bold', fill = 'purple')
 
 ######## MISTAKE ANALYSIS ###########
 
@@ -780,7 +962,7 @@ def mistakeAnalysis_redrawAll(app, canvas):
 	(canvas.create_text(app.width/15, app.height/35, 
 	text = "Home Screen", font = 'Times 10 bold', fill = 'blue'))
 	(canvas.create_text(app.width/2, app.height/6,
-	text = f"Here's how many mistakes you made: {len(app.bubbles) - app.score} ", font = 'Times 15 bold', fill = 'blue'))
+	text = f"Here's how many mistakes you made: {round(len(app.bubbles) - app.score)} ", font = 'Times 15 bold', fill = 'blue'))
 	if len(app.bubbles) < 10:
 		canvas.create_rectangle(app.width/3, app.height/2.1, app.width/1.5, app.height/1.9,fill = 'pink')
 		(canvas.create_text(app.width/2, app.height/3,
@@ -914,15 +1096,37 @@ def practice_mouseReleased(app,event):
 					break
 
 	if KeyClickedatRightTime(app, x,y):
-		app.score += 1
+		note, x0, y0, x1, y1 = app.bubbles[app.num]
+		item =  app.notes[app.num]
+		duration = item[1]
+		if abs(duration-app.seconds) <= 0.3:
+			app.score += 1
+		else:
+			app.score += 0.5
 
 def practice_timerFired(app):
-	moveFallingBubble(app, +30)
+	thex, they ,thex1, they1 = getKeyBounds(app, 0)
+	if app.bubblesy > they: 
+		if app.difficulty == 'easy':
+			app.slowness = easyslowness(app)
+		elif app.difficulty == 'moderate':
+			app.slowness = moderateslowness(app)
+		elif app.difficulty == 'difficult':
+			app.slowness = difficultslowness(app)
+
+	moveFallingBubble(app, app.slowness)
+	if app.difficulty == 'easy':
+		app.slowness = +25
+	elif app.difficulty == 'moderate':
+		app.slowness = +35
+	elif app.difficulty == 'difficult':
+		app.slowness = +40
+	
 	if ((app.num < len(app.bubbles)-1) and (app.bubblesy > app.height
 				or app.bubblesy1 > app.height)):
 		app.num += 1
 		app.bubblesy = 0
-		app.bubblesy1 = app.height/10
+		app.bubblesy1 = (app.height/10)+((app.notes[app.num][1])*100)
 		app.counter += 1
 	if app.num == len(app.bubbles)-1:
 		app.gameOver = True
